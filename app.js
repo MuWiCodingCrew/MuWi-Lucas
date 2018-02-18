@@ -59,6 +59,7 @@ app.get('/createtable', (req, res) => {
 */
 
 // SQL inserts
+/*
 app.get('/', (req, res) => {
 	let data = {Name:'Rosinski', Vorname:'Ricardo'};
 	let sql = 'INSERT INTO test SET ?';
@@ -70,8 +71,31 @@ app.get('/', (req, res) => {
 		res.send('line inserted...');
 	});
 });
+*/
 
+// SQL select *
+app.get('/', (req, res) => {
+	let sql = 'SELECT * FROM test';
+	let query = db.query(sql, (err, results) => {
+		if(err){
+			throw err;
+		}
+		console.log(results);
+		res.send('data fetched...');
+	});
+});
 
+//SQL select specific line
+app.get('/:id', (req, res) => {
+	let sql = `SELECT * FROM test WHERE id = ${req.params.id}`;
+	let query = db.query(sql, (err, result) => {
+		if(err){
+			throw err;
+		}
+		console.log(result);
+		res.send('data fetched...');
+	});
+});
 
 app.listen('3000', () => {
 	console.log('Server started on port 3000');
