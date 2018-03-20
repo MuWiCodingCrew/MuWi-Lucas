@@ -6,6 +6,8 @@ var LocalStrategy = require('passport-local').Strategy;
 var User = require('../models/user');
 var global = require('../global.js');
 
+var isStudent;
+
 // Register
 router.get('/register', function(req, res){
 	res.render('register');
@@ -53,7 +55,7 @@ router.post('/register', function(req, res){
 		});
 		
 		//  MySQL-DB User anlegen
-		var isStudent;
+		
 		if(radio=='stud'){
 			isStudent = 1;
 		}else{

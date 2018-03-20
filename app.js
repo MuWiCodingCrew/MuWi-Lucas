@@ -79,7 +79,7 @@ app.use(function (req, res, next) {
 app.use('/', routes);
 app.use('/users', users);
 
-//create db connection
+// create db connection
 global.sqldb = mysql.createConnection({
 	host	:	'localhost',
 	user	:	'admin',
