@@ -10,12 +10,14 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var mongo = require('mongodb');
 var mongoose = require('mongoose');
+var mysql = require('mysql');
 
 mongoose.connect('mongodb://localhost/loginapp');
 var db = mongoose.connection;
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var global = require('./global');
 
 // Init App
 var app = express();
@@ -76,6 +78,22 @@ app.use(function (req, res, next) {
 
 app.use('/', routes);
 app.use('/users', users);
+
+//create db connection
+global.sqldb = mysql.createConnection({
+	host	:	'localhost',
+	user	:	'admin',
+	password:	'test',
+	database:	'muwi'
+});
+
+// connect to db
+global.sqldb.connect((err) => {
+	if(err){
+		throw err;
+	}
+	console.log('MySQL connected...');
+});
 
 // Set Port
 app.set('port', (process.env.PORT || 3000));

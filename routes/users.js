@@ -4,6 +4,7 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 
 var User = require('../models/user');
+var global = require('../global.js');
 
 // Register
 router.get('/register', function(req, res){
@@ -17,17 +18,18 @@ router.get('/login', function(req, res){
 
 // Register User
 router.post('/register', function(req, res){
-	var name = req.body.name;
+	var nachname = req.body.nachname;
+	var vorname = req.body.vorname;
 	var email = req.body.email;
 	var username = req.body.username;
 	var password = req.body.password;
 	var password2 = req.body.password2;
+	var radio = req.body.radio;
 
 	// Validation
-	req.checkBody('name', 'Das Feld \'Name\' darf nicht leer sein.').notEmpty();
-	req.checkBody('email', 'Das Feld \'Email\' darf nicht leer sein.').notEmpty();
-	//req.checkBody('email', 'Dies ist keine valide Email-Adresse.').isEmail();
-	req.checkBody('username', 'Das Feld \'Benutzername\' darf nicht leer sein.').notEmpty();
+	req.checkBody('nachname', 'Das Feld \'Nachname\' darf nicht leer sein.').notEmpty();
+	req.checkBody('vorname', 'Das Feld \'Vorname\' darf nicht leer sein.').notEmpty();
+	req.checkBody('username', 'Das Feld \'HWR-Mail\' darf nicht leer sein.').notEmpty();	// Email
 	req.checkBody('password', 'Das Feld \'Passwort\' darf nicht leer sein.').notEmpty();
 	req.checkBody('password2', 'Das Feld \'Passwort bestätigen\' darf nicht leer sein.').notEmpty();
 	req.checkBody('password2', 'Die Passwörter sind nicht identisch.').equals(req.body.password);
@@ -40,19 +42,33 @@ router.post('/register', function(req, res){
 		});
 	} else {
 		var newUser = new User({
-			name: name,
-			email:email,
 			username: username,
 			password: password
 		});
-
+		
+		// PW-DB User anlegen
 		User.createUser(newUser, function(err, user){
 			if(err) throw err;
 			console.log(user);
 		});
+		
+		//  MySQL-DB User anlegen
+		var isStudent;
+		if(radio=='stud'){
+			isStudent = 1;
+		}else{
+			isStudent = 0;
+		}
+		let sql = `INSERT INTO tUser (EMAIL, Surname, Forename, IsStudent) VALUES ('${username}', '${nachname}', '${vorname}', '${isStudent}')`;
+		let query = global.sqldb.query(sql, (err, result) => {
+			if(err){
+				throw err;
+			}
+			console.log('MYSQL-DB user created: \n', result);
+			//res.send('line inserted...');
+		});
 
 		req.flash('success_msg', 'Sie haben sich erfolgreich registriert und können sich nun einloggen.');
-
 		res.redirect('/users/login');
 	}
 });
@@ -63,7 +79,7 @@ passport.use(new LocalStrategy(
 	 User.getUserByUsername(username, function(err, user){
 		 if(err) throw err;
 		 if(!user){
-			 return done(null, false, {message: 'Unbekannter Benutzername.'});
+			 return done(null, false, {message: 'Unbekannte Mailadresse.'});
 		 }
 		 
 		 User.comparePassword(password, user.password, function(err, isMatch){
